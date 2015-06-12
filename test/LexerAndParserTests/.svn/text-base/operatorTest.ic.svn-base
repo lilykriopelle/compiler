@@ -1,0 +1,12 @@
+//This class tests all the operators.
+class A {
+	void main(string[] args) {
+		int a = 1 + 2;
+		boolean b = !true; 
+		int x = -1;
+		boolean d = a < x;
+		boolean e = a != x || a <=x || a >=x || a > x || a==x;
+		boolean c = b && d || !b; 
+		int s = a % 5;
+	}
+}

@@ -1,0 +1,5 @@
+// This breaks as it should since variables must be initialized 
+// within methods according to the IC grammar.
+class A {
+	int c = a; 
+}

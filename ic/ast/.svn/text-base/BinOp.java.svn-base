@@ -1,0 +1,5 @@
+package ic.ast;
+
+public enum BinOp {
+	GT, GE, LT, LE, NE, EQEQ, PLUS, MINUS, MULT, MOD, DIV, AND, OR, CONCAT;  
+}

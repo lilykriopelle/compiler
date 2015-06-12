@@ -1,0 +1,11 @@
+
+      class Test { 
+         void main(string[] a ) {
+	   if (2 < 1) {
+	     Library.printi(1);
+           } else {
+	     Library.printi(2);
+	   }
+         }
+      }
+    

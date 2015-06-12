@@ -1,0 +1,7 @@
+class Array {
+	string[] array; 
+	void main(string[] args) {
+		array = null; 
+	}
+}
+		

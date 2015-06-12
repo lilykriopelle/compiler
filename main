@@ -1,0 +1,27 @@
+digraph G {
+   node [shape=record];
+B0[label="{Block 0|# ENTER NODE}"];
+B1[label="{Block 1|# Library call printb}"];
+B2[label="{Block 2|# Short-circuit AND.}"];
+B3[label="{Block 3|t5 = NOT true}"];
+B4[label="{Block 4|cjump t5 setToFalse0}"];
+B5[label="{Block 5|t2 = true}"];
+B6[label="{Block 6|jump endAnd1}"];
+B7[label="{Block 7|label setToFalse0}"];
+B8[label="{Block 8|t2 = false}"];
+B9[label="{Block 9|label endAnd1}"];
+B10[label="{Block 10|call __LIB_printb(t2)}"];
+B11[label="{Block 11|# EXIT NODE}"];
+B0 -> B1;
+B1 -> B2;
+B2 -> B3;
+B3 -> B4;
+B4 -> B7;
+B4 -> B5;
+B5 -> B6;
+B6 -> B9;
+B7 -> B8;
+B8 -> B9;
+B9 -> B10;
+B10 -> B11;
+}

@@ -1,0 +1,17 @@
+class C {
+	int c;
+	void b() { c = 5; }
+}
+class B {
+	A apple;
+	int c; 
+	void b() { c = 3; }
+}
+
+class A extends B {
+	A me; 
+	void a() {
+		B bee = new B();
+		bee.d();
+	}
+} 

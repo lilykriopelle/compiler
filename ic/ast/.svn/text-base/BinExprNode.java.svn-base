@@ -1,0 +1,85 @@
+package ic.ast;
+
+import ic.error.ScopingError;
+import ic.error.TACError;
+import ic.error.TypeError;
+
+
+public class BinExprNode extends ExprNode {
+	ExprNode left, right; 
+	BinOp op;
+	
+	public BinExprNode(int line,
+			ExprNode left, ExprNode right, BinOp op) {
+		super(line);
+		this.left = left;
+		this.right = right;
+		this.op = op;
+	}
+
+	public ExprNode getLeft() {
+		return left;
+	}
+	
+	public ExprNode getRight() {
+		return right;
+	}
+	
+	public BinOp getOp() {
+		return op;
+	}
+	
+	public boolean isArithmetic() {
+		return op == BinOp.PLUS || op == BinOp.MINUS || op == BinOp.MULT || op == BinOp.DIV || op == BinOp.MOD; 
+	}
+	
+	public boolean isRelational() {
+		return op == BinOp.LT || op == BinOp.LE || op == BinOp.GT || op == BinOp.GE;
+	}
+	
+	public boolean isEqualityComp() {
+		return op == BinOp.EQEQ || op == BinOp.NE; 
+	}
+	
+	public boolean isCondOp() {
+		return op == BinOp.AND || op == BinOp.OR; 
+	}
+	
+	public String opString() {
+		if(op == BinOp.GT) return ">";
+		if(op == BinOp.GE) return ">=";
+		if(op == BinOp.LT) return "<";
+		if(op == BinOp.LE) return "<=";
+		if(op == BinOp.NE) return "!=";
+		if(op == BinOp.EQEQ) return "==";
+		if(op == BinOp.PLUS) return "+";
+		if(op == BinOp.MINUS) return "-";
+		if(op == BinOp.MULT) return "*";
+		if(op == BinOp.DIV) return "/";
+		if(op == BinOp.AND) return "&&";
+		if(op == BinOp.OR) return "||";
+		if(op == BinOp.MOD) return "%"; 
+		return "";
+	}
+	
+	@Override
+	public String toString() {
+		return left + " " + op.toString() + " " + right;
+	}
+	
+	public void accept(Visitor v) {
+		v.visit(this);
+	}
+	
+	public <UpType,DownType> UpType accept(PropagatingVisitor<UpType,DownType> v, DownType t) throws Exception {
+		return v.visit(this, t);
+	}
+	
+	public <DownType> void accept(PropagateDownVisitor<DownType> v, DownType t) throws Exception {
+		v.visit(this, t); 
+	}
+	
+	public <UpType> UpType accept(PropagateUpVisitor<UpType> v) throws Exception {
+		return v.visit(this); 
+	}
+}

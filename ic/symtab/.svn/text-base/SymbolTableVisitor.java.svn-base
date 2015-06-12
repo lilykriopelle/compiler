@@ -1,0 +1,381 @@
+package ic.symtab;
+
+import ic.ast.AmbiguousAccessNode;
+import ic.ast.ArrayAccessNode;
+import ic.ast.ArrayTypeNode;
+import ic.ast.AssignmentNode;
+import ic.ast.BinExprNode;
+import ic.ast.BlockNode;
+import ic.ast.BoolLiteralNode;
+import ic.ast.BoolTypeNode;
+import ic.ast.BreakNode;
+import ic.ast.CallStmtNode;
+import ic.ast.ClassDecl;
+import ic.ast.ClassIDNode;
+import ic.ast.ContinueNode;
+import ic.ast.Decl;
+import ic.ast.EmptyStatementNode;
+import ic.ast.ExprNode;
+import ic.ast.FieldAccessNode;
+import ic.ast.FieldDecl;
+import ic.ast.IfNode;
+import ic.ast.InitNode;
+import ic.ast.InstantiationNode;
+import ic.ast.IntLiteralNode;
+import ic.ast.IntTypeNode;
+import ic.ast.LibCallNode;
+import ic.ast.LocationNode;
+import ic.ast.MethodDecl;
+import ic.ast.NewArrayNode;
+import ic.ast.NullNode;
+import ic.ast.Program;
+import ic.ast.PropagateDownVisitor;
+import ic.ast.ReturnNode;
+import ic.ast.StmtNode;
+import ic.ast.StringLiteralNode;
+import ic.ast.StringTypeNode;
+import ic.ast.ThisNode;
+import ic.ast.TypeNode;
+import ic.ast.UnExprNode;
+import ic.ast.VarAccessNode;
+import ic.ast.VarDecl;
+import ic.ast.VirtualCallNode;
+import ic.ast.VoidTypeNode;
+import ic.ast.WhileNode;
+import ic.error.ScopingError;
+import ic.error.TACError;
+
+/** Upon entering the global scope, make a new symbol table whose 
+ * enclosing scope is null. When the Visitor sees a class declaration, 
+ * add the (ClassDeclaration, CLS_ID) pair to the global symbol table that's 
+ * enclosing scope is null. Make a new SymbolTable for the class with 
+ * enclosing scope set to global. If the class extends another class, 
+ * the enclosing scope of the class will be the super class it extends. 
+ * 
+ * For each method declared in a class, add the (String name, MethodDeclaration) pair to the class'
+ * methodDecls SymbolTable and make a new SymbolTable for the method. 
+ * 
+ * When entering a block create a new scope for the block, make its enclosing scope the 
+ * scope where the block begins, and add all the (String name, Declaration) pairs to the block's 
+ * scope. Upon exiting one scope revise the current scope pointer to the enclosing scope. 
+ *  
+ * When instantiating a new object, follow the current scope pointer until reaching a scope that's
+ * enclosing scope pointer is null. Then look in that SymbolTables classDecl table for the declaration
+ * of the class.  
+ * 
+ * To add a new entry, the Visitor will call SymbolTable.add(entry) on the symbol
+ * table for the scope where the declaration occurs. 
+ * 
+ * Scoping rules are enforced whenever a new declaration is encountered by the methods of 
+ * the SymbolTable, which prevent a variable from being declared twice with the same type
+ * in the same scope, or when an identifier is referred to. Then we use find to search for
+ * the declaration in the current and then enclosing scopes. If we don't find any declaration
+ * of the proper type (ie method, field, var), we will throw an error. 
+ * 
+ * */
+
+public class SymbolTableVisitor implements PropagateDownVisitor<SymbolTable> {
+	
+	boolean inLoop = false; 
+	
+	/** Add all class declarations to the global scope, which has no enclosing scope. 
+	 * @throws   */
+	@Override
+	public void visit(Program x, SymbolTable context) throws Exception   {
+		SymbolTable sym = new SymbolTable(context, "Global"); 
+		for (ClassDecl c : x.getClasses()) {
+			String superClassName = c.getSuperClass();
+			if(! superClassName.equals("")) {
+				ClassDecl superClass = sym.findClass(superClassName);
+				/* This test must be done during this phase because classes can't extend ones 
+				 * not yet defined in the program, or in other words superclassing does not have forward references. 
+				 */
+				if(superClass == null) throw new ScopingError(x.getLine(), "Super class " + superClassName + " undefined in program.");
+			}
+			if(!sym.addClass(c)) throw new ScopingError(c.getLine(), c.getName() + " already defined.");
+		}
+		
+		for(ClassDecl c : x.getClasses()) {
+			c.accept(this, sym); 
+		}
+		x.setScope(sym);
+
+	}
+
+	/** Create a new scope for the class and add all the field and method declarations to the class scope. 
+	 * @throws Exception 
+	 * @throws TACError 
+	 * @throws   */
+	@Override
+	public void visit(ClassDecl x, SymbolTable globalScope) throws Exception   {
+		String superClassName = x.getSuperClass();
+		SymbolTable classScope = new SymbolTable(globalScope, x.getName());
+		
+		if(! superClassName.equals("")) {
+			ClassDecl superClass = globalScope.findClass(superClassName);
+			classScope.setEnclosingScope(superClass.getScope());
+		}
+		classScope.setIsClass(true);
+		
+		for(Decl d: x.getDeclarations()) {
+			d.accept(this, classScope);
+			classScope.addAmbiguous(d);
+		}
+		x.setScope(classScope);		
+	}
+
+	@Override
+	public void visit(FieldDecl x, SymbolTable classScope) throws Exception {
+		if(classScope.findField(x.getName()) != null) {
+			throw new ScopingError(x.getLine(), "The field name " + x.getName() + " has already been used in class or superclass.");
+		}
+		if(x.getType() == null) {
+			throw new ScopingError(x.getLine(), "The type of " + x.getName() + " was not defined." );
+		} else {
+			x.getType().accept(this, classScope);
+		}
+		x.setScope(classScope); 	
+	}
+
+	@Override
+	public void visit(MethodDecl x, SymbolTable classScope) throws Exception   {
+		if(classScope.isMethodAlreadyDefined(x.getName())) {
+			throw new ScopingError(x.getLine(), "Method " + x.getName() + " already defined in this class.");
+		}
+		
+		x.setOverriden(classScope.findMethod(x.getName()));
+		
+		SymbolTable methodScope = new SymbolTable(classScope, x.getName());
+		for(VarDecl param: x.getParams()) {
+			param.accept(this, methodScope);
+		}
+		(x.getMethodBody()).accept(this, methodScope); 
+		x.setScope(methodScope);
+	}
+
+	@Override
+	public void visit(VarDecl x, SymbolTable curScope) throws Exception {
+		x.setScope(curScope);
+		VarDecl oldVar = curScope.findVar(x.getName());
+		if (oldVar != null && oldVar.isParameter()) {
+			throw new ScopingError(x.getLine(), "Variable " + x.getName() + " shadows a parameter in an enclosing method scope."); 
+		} else if ( ! curScope.addVar(x)) {
+			throw new ScopingError(x.getLine(), "Variable " + x.getName() + " already used."); 
+		} 
+		
+		if (x.getType() == null) {
+			throw new ScopingError(x.getLine(), "Variable " + x.getName() + " should be declared with a type.");
+		} else {
+			x.getType().accept(this, curScope); 
+		}
+	}
+	
+	@Override
+	public void visit(BlockNode x, SymbolTable enclosingScope) throws Exception   {
+		SymbolTable blockScope = new SymbolTable(enclosingScope, "Block");
+		for (InitNode assign : x.getDecls()) {
+			assign.accept(this, blockScope);
+		}
+		for (StmtNode stmt : x.getStatements()) {
+			stmt.accept(this, blockScope); 
+		}
+		x.setScope(blockScope);
+		
+	}
+	
+	
+
+	@Override
+	public void visit(BreakNode x, SymbolTable curScope) throws Exception {
+		// Check to make sure we are in a while loop 
+		if(!inLoop) throw new ScopingError(x.getLine(), "Break statement outside of loop.");
+	}
+
+	@Override
+	public void visit(ContinueNode x, SymbolTable y) throws Exception {
+		// Check to make sure we are in a while loop 
+		if(!inLoop) throw new ScopingError(x.getLine(), "Continue statement outside of loop.");
+	}
+
+	@Override
+	public void visit(IfNode x, SymbolTable curScope) throws Exception   {
+		x.getCondition().accept(this, curScope);
+		x.getThen().accept(this, curScope);
+		x.getElse().accept(this, curScope);
+	}
+
+	@Override
+	public void visit(WhileNode x, SymbolTable curScope) throws Exception   {
+		boolean oldLoop = inLoop; 
+		inLoop = true;
+		x.getCondition().accept(this, curScope);
+		x.getBlock().accept(this, curScope);
+		
+		//To deal with potentially nested loops 
+		inLoop = oldLoop; 
+	}
+
+	@Override
+	public void visit(ReturnNode x, SymbolTable curScope) throws Exception   {
+		if(x.getExpr() != null) {
+			(x.getExpr()).accept(this, curScope);
+		}
+	}
+
+	@Override 
+	public void visit(ThisNode x, SymbolTable curScope) {
+		//should be handled in the access and method calls 
+	}
+	
+	/** Because of forward reference we can't resolve anything conclusively here. 
+	 * @throws TACError */
+	@Override
+	public void visit(FieldAccessNode x, SymbolTable curScope) throws Exception {
+		ExprNode receiver = x.getReceiver();
+		receiver.accept(this, curScope);
+	}
+	
+	@Override
+	public void visit(ArrayAccessNode x, SymbolTable curScope) throws Exception {
+		ExprNode array = x.getArray(); 
+		array.accept(this, curScope); 
+		ExprNode index = x.getIndex();
+		index.accept(this, curScope);
+	}
+
+	/* Because of forward reference, the access cannot be resolved at SymbolTable creation time. */
+	@Override
+	public void visit(AmbiguousAccessNode x, SymbolTable curScope) throws Exception {
+	}
+	
+	/* Because of forward reference, the access cannot be resolved at SymbolTable creation time. */
+	@Override
+	public void visit(VarAccessNode x, SymbolTable y) throws Exception {
+	}
+	
+	
+	@Override
+	public void visit(AssignmentNode x, SymbolTable curScope) throws Exception   {
+		(x.getRight()).accept(this, curScope);
+		(x.getLeft()).accept(this, curScope);
+	}
+	
+	@Override
+	public void visit(InitNode x, SymbolTable curScope) throws Exception   {
+		Decl left = x.getLeft();
+		left.accept(this, curScope);
+		if (x.getRight() != null) (x.getRight()).accept(this, curScope);
+	}
+
+	@Override
+	public void visit(UnExprNode x, SymbolTable curScope) throws Exception {
+		(x.getExpr()).accept(this, curScope);
+	}
+
+	@Override
+	public void visit(BinExprNode x, SymbolTable curScope) throws Exception   {
+		(x.getLeft()).accept(this, curScope);
+		(x.getRight()).accept(this, curScope);
+	}
+
+	/* Because of forward reference, the instantiation be checked at SymbolTable creation time. */
+	@Override
+	public void visit(InstantiationNode x, SymbolTable curScope) throws Exception {
+	}
+	
+	/* Because of forward reference, the type be checked at SymbolTable creation time. */
+	@Override
+	public void visit(ClassIDNode x, SymbolTable curScope) throws Exception {
+	}
+
+	
+	@Override
+	public void visit(CallStmtNode x, SymbolTable currentScope) throws Exception   {
+		x.getCall().accept(this, currentScope);
+	}
+	
+	@Override
+	public void visit(LibCallNode x, SymbolTable curScope) throws Exception {
+		for (ExprNode arg: x.getArguments()) {
+			arg.accept(this, curScope);
+		}	
+	}
+
+	/* Because of forward reference, the virtual call can't be checked at SymbolTable creation time. */
+	@Override
+	public void visit(VirtualCallNode x, SymbolTable curScope) throws Exception   {
+		ExprNode receiver = x.getReceiver();
+		receiver.accept(this, curScope);
+		for (ExprNode arg: x.getArguments()) {
+			arg.accept(this, curScope);
+		}	
+	}
+
+	@Override
+	public void visit(NewArrayNode x, SymbolTable currentScope) throws Exception {
+		x.getSize().accept(this, currentScope);
+		x.getElementType().accept(this, currentScope);
+	}
+
+	@Override
+	public void visit(EmptyStatementNode x, SymbolTable y) {
+		//do nothing
+	}
+
+	
+	
+	
+	@Override
+	public void visit(BoolLiteralNode x, SymbolTable y) {
+		// do nothing
+		
+	}
+
+	@Override
+	public void visit(IntLiteralNode x, SymbolTable y) {
+		// do nothing		
+	}
+
+	@Override
+	public void visit(StringLiteralNode x, SymbolTable y) {
+		// do nothing		
+	}
+
+	@Override
+	public void visit(NullNode x, SymbolTable y) {
+		// do nothing		
+	}
+
+
+	/** We must make sure that the type of elements in the array is well-formed 
+	 *  by visiting it.  
+	 * @throws TACError 
+	 */
+	@Override
+	public void visit(ArrayTypeNode x, SymbolTable curScope) throws Exception {
+		x.getElementType().accept(this, curScope);
+	}
+
+	@Override
+	public void visit(BoolTypeNode x, SymbolTable y) {
+		//do nothing
+	}
+
+
+	@Override
+	public void visit(StringTypeNode x, SymbolTable y) {
+		// do nothing
+		
+	}
+
+	@Override
+	public void visit(VoidTypeNode x, SymbolTable y) {
+		// do nothing		
+	}
+
+	@Override
+	public void visit(IntTypeNode x, SymbolTable y) {
+		// do nothing		
+	}
+	
+}

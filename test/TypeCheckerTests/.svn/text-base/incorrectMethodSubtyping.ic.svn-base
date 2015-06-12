@@ -1,0 +1,38 @@
+// breaks
+class C {
+	int g;
+	B g() {
+		return new B();
+	}
+}
+
+class B extends C {
+	string bee;
+	C g() {
+		return new C();
+	}
+	
+	void println(string x) {
+		string bee = "hello";
+		Library.println(x);
+	}
+}
+class A extends B {
+	int a, b, c; 
+	int[] array; 
+	int bAndC() {
+		return b + c; 
+	}
+	void main (string [] args) {
+		B buzz = new A();
+		A bee = new A();
+		B cow = new B();
+		string s = "hello";
+		boolean t = true;
+		int wut = bAndC();
+		buzz.g();
+		bee.g();
+		cow.g();
+		buzz.println(s); 
+	}
+}

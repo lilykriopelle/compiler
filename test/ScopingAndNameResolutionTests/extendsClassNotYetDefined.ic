@@ -1,0 +1,19 @@
+//breaks as it should
+class A extends B {
+	int a; 
+	int b; 
+	int[] array; 
+	void main (string[] args) {
+		B a = new B(); 
+	}
+	
+	int method() {
+		int a = 10; 
+		a = array.length;
+		return c; 
+	}
+}
+
+class B {
+	int c;
+}

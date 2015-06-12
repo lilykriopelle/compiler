@@ -1,0 +1,13 @@
+class C {
+	void main(string[] args){} // should have offset 0
+
+	int a;		// should have offset 0
+	int b;
+}
+
+class B extends C {
+
+	int c;		// should have offset 8;
+	int e;
+	int f;
+}

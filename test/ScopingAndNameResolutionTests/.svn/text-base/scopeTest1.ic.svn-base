@@ -1,0 +1,6 @@
+//Copied from the IC Spec
+//Runs as it should because f can act as both a field and a method name in the same class
+class A {
+	int f;
+	void f() { }
+}

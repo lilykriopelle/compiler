@@ -1,0 +1,18 @@
+// runs
+class B {
+	string bee;
+	void println(string x) {
+		string bee = "hello";
+		Library.println(x);
+	}
+}
+class A extends B {
+	int a, b, c; 
+	int[] array; 
+	void main (string [] args) {
+		A buzz = new A();
+		string s = "hello";
+		boolean t = true;
+		buzz.println(s); 
+	}
+}

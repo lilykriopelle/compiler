@@ -1,0 +1,15 @@
+class C {
+	void main(string[] args){} // should have offset 0
+	void a() {} // should have offset 8
+	void c() {} // should have offset 16
+	void b() {} // should have offset 24
+}
+
+class B extends C {
+	void b() {} // should have offset 24
+	void a() {} // should have offset 8
+}
+
+class A extends B {
+	void e() {}
+}

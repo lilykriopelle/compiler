@@ -1,0 +1,33 @@
+package ic.ast;
+
+import ic.error.ScopingError;
+import ic.error.TACError;
+import ic.error.TypeError;
+import ic.symtab.SymbolTable;
+import ic.tac.TACInstr;
+
+public abstract class ExprNode extends ASTNode {
+	TypeNode type = null;
+	SymbolTable scope = null;
+
+	public ExprNode(int line) {
+		super(line);
+	}
+	
+	public void setType(TypeNode t) {
+		type = t; 
+	}
+	
+	public TypeNode getType() {
+		return type; 
+	}
+	
+	public void setScope(SymbolTable scope) {
+		this.scope = scope;
+	}
+	
+	public SymbolTable getScope() {
+		return scope;
+	}
+
+}

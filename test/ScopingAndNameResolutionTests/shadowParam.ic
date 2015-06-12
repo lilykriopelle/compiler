@@ -1,0 +1,20 @@
+// throws the scoping error that b shadows a parameter in the enclosing scope.
+class C {
+	int c;
+	void b() { c = 5; }
+}
+class B {
+	A apple;
+	int c; 
+	void b() { this.c = 3; }
+}
+
+class A extends B {
+	A me; 
+	void a(int b) {
+		while (true) {
+			int b = 5; 
+		}
+		return c;
+	}
+}

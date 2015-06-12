@@ -1,0 +1,11 @@
+class A {
+ 	void hello() {}
+	void main(string[] args) {
+	
+		int x = 3;// + 5 + 7; 
+		int y = 5 + x; 
+		int z = x; 
+		x = y; 
+	
+	}
+}

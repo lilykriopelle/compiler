@@ -1,0 +1,49 @@
+#!/bin/bash
+
+#
+# Usage: test-files dir flag1 flag2 ... flagn
+#
+# This will run icc on every .ic file in the given directory, passing flag1..n to icc.
+
+# store the directory name for the test files
+DIR=$1
+
+# move past the directory name, so $1 is now the second actual argument, and so on.
+shift
+
+# store the remaining args to pass to icc later on.
+ARGS=$*
+
+# collect file names, ruling out hidden svn files
+FILES=`find $DIR -type f -name "*.ic" | grep -v "\.svn"` 
+
+echo "Testing on `echo $FILES | wc` files"
+
+for f in $FILES 
+do
+	echo "############################################################"
+	echo "#### File: " $f
+	echo
+	cat -n $f
+	echo
+	echo "#### Running 'icc $f $ARGS':"
+	echo 
+	# redirect stderr to stdout
+	./icc $f $ARGS 2>&1  
+	NAME=`echo $f | cut -f1 -d.`
+	## java -classpath bin:tools/java-cup-11a.jar ic.Compiler $NAME.ic -opt
+	##echo gcc -m64 -g -o file.exe $NAME.s libic64.a 
+	gcc -m64 -g -o file.exe $NAME.s libic64.a 
+	echo 
+	echo "######Our compiler####"
+	##echo chmod +x ./file.exe
+	chmod +x ./file.exe
+	##echo ./file.exe
+	./file.exe
+	echo
+	echo "######Steve's compiler####"
+	cat $NAME.expected
+	echo
+	echo "#### Done"
+	echo
+done

@@ -1,0 +1,22 @@
+class A {
+
+	void main(string[] args) {
+		int a = Library.readi();
+		int b = Library.stoi();
+		int c = Library.random();
+		int d = Library.time();
+		
+		string e = Library.readln();
+		string f = Library.itos();
+		string g = Library.atos();
+		
+		boolean h = Library.eof();
+		
+		int[] i = Library.stoa();
+		
+		Library.println();
+		Library.print();
+		Library.printi();
+	}
+
+}		

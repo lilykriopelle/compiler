@@ -1,0 +1,6 @@
+class A {
+	void main(string[] args) {
+		boolean x = true || false; 
+		boolean y = false && true; 
+	}
+}

@@ -1,0 +1,9 @@
+
+class Fields {
+	int[] c; 
+	void main(string[] args) {
+		int i = 0;
+		c = new int[10]; 
+		c[i] = 5; 
+	}
+}

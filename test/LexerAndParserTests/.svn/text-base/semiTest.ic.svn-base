@@ -1,0 +1,8 @@
+
+//runs. Breaks if we remove the semicolon after a or b.
+
+class A extends B {
+	int a; 
+	int b; 
+	void main (String[] args) { return 12; }
+}

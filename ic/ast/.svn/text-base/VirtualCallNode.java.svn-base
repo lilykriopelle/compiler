@@ -1,0 +1,85 @@
+package ic.ast;
+
+import ic.error.ScopingError;
+import ic.error.TACError;
+import ic.error.TypeError;
+
+import java.util.Vector;
+/** During the SymbolTable pass resolvedMethod will hopefully get resolved to 
+ *  a method in the class of the type of receiver. 
+ */
+public class VirtualCallNode extends ExprNode {
+	ExprNode receiverExpr; 
+	String methodName;
+	Vector<ExprNode> actualParams;
+	MethodDecl resolvedMethod = null;
+	
+	public VirtualCallNode(int line,
+			ExprNode receiverExpr, String methodName,
+			Vector<ExprNode> actualParams) {
+		super(line);
+		this.receiverExpr = receiverExpr;
+		this.methodName = methodName;
+		this.actualParams = actualParams;
+	}
+	
+	public MethodDecl getResolvedMethod() {
+		return resolvedMethod; 
+	}
+	
+	public void resolve(MethodDecl resolvedMethod) {
+		this.resolvedMethod = resolvedMethod;
+		type = resolvedMethod.getReturnType();
+	}
+	
+	public ExprNode getReceiver() {
+		return receiverExpr;
+	}
+	
+	public String getMethodName() {
+		return methodName;
+	}
+	
+	public Vector<ExprNode> getArguments() {
+		return actualParams;
+	}
+
+	 
+	public String toString() {
+		
+		String toString = ""; 
+		if(receiverExpr != null) {
+			toString += receiverExpr.toString() + "."; 
+		}
+		toString += methodName + "("; 
+		if(actualParams.size() > 0) {
+			toString += actualParams.get(0); 
+			for (int i = 1; i < actualParams.size(); ++i) {
+				toString += ", " + actualParams.get(i).toString(); 
+			}
+		}
+		return toString + ")"; 
+	} 
+	
+	 
+	public void accept(Visitor v) {
+		v.visit(this);
+	}
+	
+	 
+	public <UpType,DownType> UpType accept(PropagatingVisitor<UpType,DownType> v, DownType t) throws Exception {
+		return v.visit(this, t);
+	}
+	
+	 
+	public <DownType> void accept(PropagateDownVisitor<DownType> v, DownType t) throws Exception {
+		v.visit(this, t); 
+	}
+	
+	 
+	public <UpType> UpType accept(PropagateUpVisitor<UpType> v) throws Exception {
+		return v.visit(this); 
+	}
+	
+	
+}

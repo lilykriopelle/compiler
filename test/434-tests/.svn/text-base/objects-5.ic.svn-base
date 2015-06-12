@@ -1,0 +1,11 @@
+   /* s */
+      class Super {  int f() { return -99; } }
+      class Test extends Super { 
+         int g() { return 11; }
+         void main(string[] a ) {
+          Library.printi(g());
+          Library.printi(f());
+          Library.printi(f()); 
+        }
+     }
+    

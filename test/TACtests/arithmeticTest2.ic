@@ -1,0 +1,7 @@
+class A {
+	void main(string[] args) {
+		int x = 3 + 7; 
+		int y = 5 * 2; 
+		int z = x + y;
+	}
+}

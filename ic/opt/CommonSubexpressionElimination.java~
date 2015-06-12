@@ -1,0 +1,31 @@
+
+package ic.opt; 
+
+import ic.tac.*;
+import ic.dfa.AvailableExpressions; 
+import ic.ast.MethodDecl; 
+import ic.cg.ControlFlowGraph;
+
+public class CommonSubexpressionElimination extends Optimization {
+
+    private AvailableExpressions ae; 
+    private TACList method; 
+    private boolean printDFA; 
+
+    public CommonSubexpressionElimination(boolean printDFA) {
+	this.printDFA = printDFA; 
+    }
+
+    @Override 
+    public void optimize(MethodDecl md) {
+	ae = new AvailableExpressions(md.getCFG()); 
+	ae.solve(); 
+	method = md.getTACList(); 
+
+	if(printDFA) {
+	    TAC_Printer aePrinter = new TAC_Printer(ae); 
+	    System.out.println("\nTAC of " + md.getName() + " with Available Expressions Information"); 
+	    method.print(aePrinter); 
+	}
+    }
+}

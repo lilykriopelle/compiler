@@ -1,0 +1,61 @@
+package ic.ast;
+import ic.symtab.*;
+
+public abstract class Decl extends ASTNode {
+	
+	SymbolTable scope = null; 
+	String name;
+	TypeNode type = null; 
+	int offset;
+	int index = -100; //So we always throw a segfault when we misuse it
+	
+	public Decl(int line, String name) {
+		super(line); 
+		this.name = name;
+	}
+	
+	public boolean isParameter() {
+		return false; 
+	}
+	
+	public String getClassName() {
+		return scope.findEnclosingClass().getName(); 
+	}
+	
+	public void setOffset(int o) { 
+		offset = o; 
+	}
+	
+	public int getIndex() {
+		return index; 
+	}
+	
+	public int getOffset() {
+		return offset;
+	}
+	
+	public void setType(TypeNode type) {
+		this.type = type;
+	}
+	
+	public TypeNode getType() {
+		return type;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public SymbolTable getScope() {
+		return scope;
+	}
+	
+	public void setScope(SymbolTable scope) {
+		this.scope = scope; 
+	}
+	
+	public String resolvedToString() {
+		return name + " resolved to type " + type + " on line " + line; 
+	}
+	
+}

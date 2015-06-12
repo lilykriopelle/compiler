@@ -1,0 +1,51 @@
+package ic.ast;
+
+import ic.error.ScopingError;
+import ic.error.TACError;
+import ic.error.TypeError;
+
+/** An ambiguous access node is used when it is unclear whether the name used 
+ * refers to a field or variable access. */
+public class AmbiguousAccessNode extends LocationNode {
+	LocationNode resolved; 
+	
+	public AmbiguousAccessNode(int line, String name) {
+		super(line, name);
+		this.name = name;
+	}
+
+	public void resolve(LocationNode access) {
+		resolved = access; 
+		type = access.getType();
+	}
+	
+	public LocationNode getResolvedLocation() {
+		return resolved; 
+	}
+	
+	
+	public TypeNode getType() {
+		return resolved.getType(); 
+	}
+
+	@Override
+	public String toString() {
+		return name;
+	}
+	
+	public void accept(Visitor v) {
+		v.visit(this);
+	}
+	
+	public <UpType,DownType> UpType accept(PropagatingVisitor<UpType,DownType> v, DownType t) throws Exception {
+		return v.visit(this, t);
+	}
+	
+	public <DownType> void accept(PropagateDownVisitor<DownType> v, DownType t) throws Exception {
+		v.visit(this, t); 
+	}
+	
+	public <UpType> UpType accept(PropagateUpVisitor<UpType> v) throws Exception {
+		return v.visit(this); 
+	}
+}

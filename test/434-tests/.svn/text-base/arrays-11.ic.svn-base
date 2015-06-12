@@ -1,0 +1,11 @@
+class A {
+int[] a; 
+void f() {
+	a[1] = 2;
+	} 
+	void main(string[] args) {
+		a = new int[10];
+		this.f();  
+		Library.printi(a[1]); 
+	}
+}

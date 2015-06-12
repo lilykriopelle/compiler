@@ -1,0 +1,19 @@
+// Runs. Testing "continue" and "break".
+
+class A extends B {
+	int a, b, c; 
+	int[] array; 
+	void main (String [] args) {
+		 A a = new A(); 
+		 c = a.method();
+		 if(a==b) this.println("Hello");  
+	}
+	int method(int a, int b, string s) {
+		while (i < 100) {
+			continue;
+		}
+		while (i <= 100) {
+			break;
+		}
+	}
+}

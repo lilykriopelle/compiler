@@ -1,0 +1,10 @@
+class Cse {
+	void main(string[] args) {
+		int i = 5; 
+		int z = i + 5;
+		int y; 
+		z = 2; 
+		y = i + 5;
+	}
+}
+		 

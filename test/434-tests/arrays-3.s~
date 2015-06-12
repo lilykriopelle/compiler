@@ -1,0 +1,173 @@
+# File test/434-tests/arrays-3.s
+
+
+# 
+# VTables
+
+.data
+.align 8
+
+_Main_DV:
+      .quad _Main_main
+
+
+# 
+# Code.
+# Main
+.text
+.align 8
+_Main_main:
+
+     # prologue
+     pushq %rbp                    
+     movq %rsp, %rbp                
+     subq $96, %rsp                
+
+   movq $10, %rax
+   movq $0, %rcx
+	cmpq %rcx, %rax
+   jl labelArraySizeError
+   movq $10, %rax
+   movq $8, %rbx
+     mulq %rbx
+     movq %rax, -24(%rbp)
+   movq -24(%rbp), %rcx
+     addq $8,%rcx
+     movq %rcx, -32(%rbp)
+   # allocate an array
+   movq -32(%rbp), %rdx
+   call __LIB_allocateArray
+   movq %rax, %rdx
+   movq %rdx, -8(%rbp)
+   # store length before array
+   movq -8(%rbp), %rax
+   movq $10, %rcx
+   movq $0, %r8
+   subq $1, %r8
+   movq %rcx, 0(%rax, %r8, 8)
+     # store x into x
+     movq -8(%rbp), %rcx
+     movq %rcx, -8(%rbp)
+     # Array Access
+   movq 56(%rbp), %rbx
+   movq $0, %r8
+	cmpq %rbx, %r8
+   jz labelNullPtrError
+   movq 56(%rbp), %rdi
+   movq $0, %r8
+   movq 8(%rdi, %r8, 8), %rcx
+   movq %rcx, %rax
+   movq $0, %rbx
+	cmpq %rbx, %rax
+   jle labelArrayBoundsError
+   # store into an array
+   movq 56(%rbp), %rax
+   movq $0, %rdi
+   movq $1, 0(%rax, %rdi, 8)
+     # Library call printi
+     # Array Access
+   movq 56(%rbp), %rbx
+   movq $0, %r8
+	cmpq %rbx, %r8
+   jz labelNullPtrError
+   movq 56(%rbp), %rdi
+   movq $0, %r8
+   movq 8(%rdi, %r8, 8), %rcx
+   movq %rcx, %rax
+   movq $0, %rbx
+	cmpq %rbx, %rax
+   jle labelArrayBoundsError
+   # load an element of an array
+   movq 56(%rbp), %rax
+   movq $0, %rdi
+   movq 0(%rax, %rdi, 8), %rcx
+   movq %rcx, -72(%rbp)
+     movq -72(%rbp), %rcx
+     movq %rcx, -72(%rbp)
+   # print an integer t8
+   movq -72(%rbp), %rdi
+   call __LIB_printi
+     # epilogue
+     movq %rbp, %rsp                
+     popq %rbp                      
+     ret                           
+
+
+
+# 
+# Error handling.  Jump to these procedures when a runtime check fails.
+
+.data
+.align 8
+
+.quad 23
+  strNullPtrErrorChars:     .ascii "Null pointer violation."
+strNullPtrError: .quad strNullPtrErrorChars
+
+.quad 23
+  strArrayBoundsErrorChars: .ascii "Array bounds violation."
+strArrayBoundsError: .quad strArrayBoundsErrorChars
+
+.quad 21
+  strArraySizeErrorChars:   .ascii "Array size violation."
+strArraySizeError: .quad strArraySizeErrorChars
+
+.text
+.align 8
+labelNullPtrError:
+    movq strNullPtrError(%rip), %rdi
+    call __LIB_println
+    movq $1, %rdi
+    call __LIB_exit
+
+.align 8
+labelArrayBoundsError:
+    movq strArrayBoundsError(%rip), %rdi
+    call __LIB_println
+    movq $1, %rdi
+    call __LIB_exit
+
+.align 8
+labelArraySizeError:
+    movq strArraySizeError(%rip), %rdi
+    call __LIB_println
+    movq $1, %rdi
+    call __LIB_exit
+
+
+
+# The main entry point.  Allocate object and invoke main on it.
+
+.text
+.align 8
+.globl __ic_main
+__ic_main:
+     pushq %rbp                        # prologue
+     movq %rsp,%rbp                
+     pushq %rdi                        # o.main(args) > push args
+
+       movq $   8, %rdi                 # o = new Main
+     call __LIB_allocateObject   
+     leaq _Main_DV(%rip), %rdi       
+     movq %rdi, (%rax)
+     pushq %rax                        # o.main(args) > push o
+     movq (%rax), %rax            
+     call *0(%rax)                   # main is at offset 0 in vtable
+     addq $16, %rsp                
+     movq $0, %rax                     # __ic_main always returns 0
+
+     movq %rbp,%rsp                    # epilogue
+     popq %rbp                    
+     ret                         
+
+
+
+# 
+# String Constants
+
+.data
+.align 8
+
+
+
+

@@ -1,0 +1,10 @@
+class A {
+	int f() {
+		if(true) {
+			return 3; 
+		} else {
+			return "moo";
+		} 
+	} 
+	int x;
+}

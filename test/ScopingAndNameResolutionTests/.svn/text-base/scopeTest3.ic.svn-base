@@ -1,0 +1,10 @@
+//This works! 
+class A {
+	void f() {
+		int x;
+		{
+			boolean x;
+			x = true; 
+		}
+	}
+}

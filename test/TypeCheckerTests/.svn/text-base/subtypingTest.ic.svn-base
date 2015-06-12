@@ -1,0 +1,12 @@
+//runs
+class B {
+}
+class A extends B {
+	int a; 
+	int b; 
+	void main (String[] args) { 
+		a = 5;
+		b = 3; 
+		return a + b; 
+	}
+}

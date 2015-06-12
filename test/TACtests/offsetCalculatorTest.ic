@@ -1,0 +1,39 @@
+// runs
+class C {
+	int g;
+	void g() {
+	}
+	void f() {
+	}
+}
+
+class B extends C {
+	string bee;
+	int h;
+	void g() {
+	}
+	void println(string x) {
+		string bee = "hello";
+		Library.println(x);
+	}
+}
+
+class A extends B {
+	int a, b, c; 
+	int[] array; 
+	int bAndC() {
+		return b + c; 
+	}
+	void main (string [] args) {
+		B buzz = new A();
+		string s = "hello";
+		boolean t = true;
+		int wut = bAndC();
+		buzz.println(s); 
+	}
+}
+
+class D {
+	int h;
+	string u;
+}

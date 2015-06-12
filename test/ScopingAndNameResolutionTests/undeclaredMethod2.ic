@@ -1,0 +1,20 @@
+// throws the scoping error that buzz is not defined in the class B.
+class C {
+	int c;
+	void b() { c = 5; }
+}
+class B {
+	A apple;
+	int c; 
+	void buzz() { c = 3; }
+}
+
+class A extends B {
+	A me; 
+	void a() {
+		A a = new A();
+		B bee = new B();
+		bee.buzz();
+		return c; 
+	}
+}

@@ -1,0 +1,7 @@
+//This will fail because shadowing parameters is illegal
+class A {
+	void f(int x) {
+		int x = 1;
+		A a = new A();
+	}
+}

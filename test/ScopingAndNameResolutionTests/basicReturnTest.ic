@@ -1,0 +1,19 @@
+//runs
+class B {
+int c;
+}
+class A extends B {
+	int a; 
+	int b; 
+	int[] array; 
+	void main (string[] args) {
+		//B a = new B(); 
+		// c = a.method(); 
+	}
+	int method() {
+		int a = 10; 
+		boolean c = !true; 
+		a = array.length;
+		return c; 
+	}
+}

@@ -1,0 +1,17 @@
+// Testing multiple formal parameters in line 12.
+
+class A extends B {
+	int a; 
+	int b; 
+	int[] array; 
+	void main (String [] args) {
+		 A a = new A(); 
+		 c = a.method();
+		 if(a==b) this.println("Hello");  
+	}
+	int method(int a, int b, string s) {
+		a = 10; 
+		b = array.length; 
+		return 5; 
+	}
+}

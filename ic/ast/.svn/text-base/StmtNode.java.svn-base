@@ -1,0 +1,10 @@
+package ic.ast;
+
+import ic.error.TACError;
+
+public abstract class StmtNode extends ASTNode {
+	
+	public StmtNode(int line) {
+		super(line);
+	} 	
+}

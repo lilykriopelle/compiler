@@ -1,0 +1,15 @@
+  /* instance fields */
+      class Test { 
+        int x;
+        int y;
+        int f() { return this.x; }
+         void main(string[] a ) {
+          Test t = new Test();
+          t = null; 
+          t.x = 10;
+          Library.printi(t.x);
+          t.y = 13;
+          Library.printi(t.y);
+        }
+     }
+    

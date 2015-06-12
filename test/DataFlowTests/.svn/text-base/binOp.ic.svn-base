@@ -1,0 +1,10 @@
+class BinOP {
+	
+	void main(string[] args) {
+		int[] array = new int[100];
+		array[5] = 10; 
+		if(array[5] == 10) {
+			Library.println("YAY"); 
+		}
+	}
+}	

@@ -1,0 +1,17 @@
+
+class ArrayLoop {
+	void main(string[] args) {
+		int[] array = new int[100];
+		int j = 0; 
+		int i = 0; 
+		while(i < array.length) {
+			array[i] = i;
+			i = i + 1; 
+		}
+		while(j < array.length) {
+			Library.printi(array[j]); 
+			Library.println("");
+			j = j + 1;  
+		}
+	}
+} 

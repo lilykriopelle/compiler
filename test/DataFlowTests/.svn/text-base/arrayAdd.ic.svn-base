@@ -1,0 +1,18 @@
+class Array {
+	int[] array;
+	void get() {
+		Library.printi(array[5]); 
+	}
+	 
+	void main(string[] args) {
+		int x;
+		int i = 5; 
+		int j = 6; 
+		array = new int[100];
+		array[5] = 15; 
+		array[6] = 25; 
+		get();
+		x = array[i] + array[j]; 
+	}
+}
+		

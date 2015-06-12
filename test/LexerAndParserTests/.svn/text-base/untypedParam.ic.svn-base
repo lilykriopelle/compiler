@@ -1,0 +1,17 @@
+// Breaks because the parser expects types for all params, and no type is given for args.
+
+class A extends B {
+	int a; 
+	int b; 
+	int[] array; 
+	void main (args) {
+		 A a = new A(); 
+		 c = a.method();
+		 if(a==b) this.println("Hello");  
+	}
+	int method() {
+		a = 10; 
+		b = array.length; 
+		return 5; 
+	}
+}

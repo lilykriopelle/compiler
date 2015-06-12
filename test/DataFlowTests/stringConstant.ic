@@ -1,0 +1,8 @@
+class StringConstants {
+      void main(string[] args) {
+      	   string p = "purple";
+	   string c = "cow";
+	   string e = p + c; 
+	   Library.println(e); 
+}
+}

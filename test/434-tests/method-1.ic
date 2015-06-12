@@ -1,0 +1,10 @@
+  /* instance fields */
+      class Test { 
+        int f() { 
+        	return 3; 
+        }
+        void main(string[] a ) {
+         	Test t = new Test(); 
+         	Library.printi(t.f()); 
+        }
+     }

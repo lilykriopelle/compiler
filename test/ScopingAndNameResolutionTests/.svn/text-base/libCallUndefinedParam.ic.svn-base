@@ -1,0 +1,12 @@
+// fails as it should
+class B {
+}
+class A extends B {
+	int a, b, c; 
+	int[] array; 
+	void main (string [] args) {
+		string s = "hello";
+		boolean t = true;
+		Library.println(nanner); 
+	}
+}

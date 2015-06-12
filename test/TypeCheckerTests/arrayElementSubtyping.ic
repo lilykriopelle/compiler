@@ -1,0 +1,15 @@
+class B {}
+
+class A extends B {}
+
+class C {
+
+	void main(string[] args) {}
+	B [] x;
+	A [] y;
+	
+	void f() {
+		x = y;
+	} 
+
+}

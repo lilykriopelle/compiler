@@ -1,0 +1,14 @@
+//runs
+class A {
+	void main(string[] args) {
+		if (args[0] != "") a(args); else b(args);
+	}
+	void a(string[] s) {
+		s = null; 
+		return;
+	}
+	int b(string[] s) {
+		int x = s.length; 
+		return x; 
+	}
+}	

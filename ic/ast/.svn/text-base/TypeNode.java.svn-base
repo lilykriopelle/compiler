@@ -1,0 +1,15 @@
+package ic.ast;
+
+import ic.error.TACError;
+
+public abstract class TypeNode extends ASTNode {
+	
+	public TypeNode(int line) {
+		super(line);
+	}
+	
+	//shouldn't be called
+	public boolean isEqualTo(TypeNode t) {
+		return false;
+	}
+}

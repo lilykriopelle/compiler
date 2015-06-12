@@ -1,0 +1,459 @@
+//////////////////////////////// PARSER + AST DESIGN - OCTOBER 2nd ///////////////////////////////
+
+Parser Write-up:
+
+For the parse, we translated the IC grammar to be CUP compatible. While this was a relatively
+straightforward translation, we ran into some problems with shift/reduce conflicts. We dealt
+with the conflict in if-then-else statements by giving else higher precedence and left 
+associativity, causing it to be shifted before the if statement is reduced. For the other 
+conflicts, we were able to eliminate ambiguity by factoring the grammar. 
+
+We quickly became frustrated with the less than helpful default error reporting of CUP. We
+made a new class SyntaxError, which mimics the behavior of LexicalError. Throwing this error
+also suppresses the error recovery of CUP, which had masked some of our early errors. To 
+support this new error recovery, we had to cast Symbols to Tokens within the CUP file and 
+then catch any errors in the main method of the Compiler class. 
+
+To test our parser, we wrote 21 small ic programs, some of which should break and did and 
+others of which should have run and did. We tried to test one feature at a time, by deleting
+or inserting single characters, operations, or reserved words from one test to the next. We
+roughly tested things in the order they appeared in the IC Syntax specification. The last test
+is a bit of a catch-all for the operators to ensure that we did not leave any of them out
+of the specification. 
+
+Proposed AST Layout:
+
+We will have one super class for all nodes, called ICNode.
+
+Subclassing that, we will have BinOpNode, UnOpNode, and ActionNode.
+
+BinOpNode will have one subclass - IntBinOpNode - for all binary operators on integers, 
+and another - BoolBinOpNode - for all binary operators on booleans.  We plan to implement
+a version of equality comparison for each of these subclasses.  We imagine that when it comes
+time to type-check, this class hierarchy will be useful.
+
+UnOpNode will have subclasses for unary minus, logical not, string.length, 
+and array.length.
+
+We will also have nodes for array access, field access, and method calls.
+We also need an ID node and a special Class node (created when we see a ClassID but
+holding more information than just the name).
+
+We will need nodes for each of the literal types, a type for objects, and a type 
+for arrays.
+
+We will have both InstantiationNodes (basically for new) and AssignmentNodes 
+(basically for EQ).     
+
+We will have a ControlNode class, which has break, continue, return, and LoopNode subclasses. 
+The LoopNode class will have if-then-else nodes and while-loop nodes
+as subclasses.  We are choosing to subclass the same super class because both types
+of control logic should expect a boolean expression as their left child, and some
+action(s) as their right child. We think that the ControlNode class will be helpful
+when constructing control flow diagrams. 
+
+///////////////////////////////////// ABSTRACT SYNTAX TREE - OCTOBER 17th //////////////////////////
+
+AST Class Hierarchy:
+
+All AST Nodes extend ASTNode.  ASTNode's subclasses are:
+
+
+	- ProgramNode
+
+
+	- DeclNodes, whose subtypes are:
+		- ClassDecl
+		- FieldDecl
+		- MethodDecl
+		- VarDecl
+		
+		
+	- ExprNodes
+		- Locations
+			- AmbiguousAccess
+			- ArrayAccess
+			- FieldAccess
+			- VarAccess (which we currently don't use.)
+		- BinExpr
+		- UnExpr (also includes ".length" on arrays)
+		- literal nodes of all types
+		- VirtualCall and LibCall
+		- This
+		- Object and Array Instantiation
+		- Initiation (for variable declarations)
+		
+		
+	- TypeNodes
+		- ArrayType
+		- BoolType
+		- ClassID
+		- IntType
+		- StringType
+		- VoidType
+	
+	
+	- StmtNodes
+		- Assignment
+		- Block
+		- CallStmt (just a Call expr and a ";")
+		- Break
+		- Continue
+		- Return
+		- EmptyStatement
+		- If
+		- While
+
+
+///////////////////////////////////// SYMBOL TABLE VISITOR - OCTOBER 17th ////////////////////////////////////////////
+
+The SymbolTable visitor recursively visits all the nodes in the AST constructed by the parser.  It constructs
+a SymbolTable object for each scope.  This SymbolTable contains four sub-tables; one for fields, one for methods,
+one for classes, and one for variables.
+
+The SymbolTable visitor is responsible for correctly setting the scope and enclosing scope of each node in the AST. 
+It also enforces scoping rules by looking in the SymbolTable of the current scope (and recursively searching the enclosing 
+scopes when necessary) to find and report illegal name clashes, and also reports undeclared variable uses.  
+
+The SymbolTable visitor updates information in the nodes themselves for use during the compiler's later passes.
+Specifically, the SymbolTable visitor resolves IDs to their meanings, and in doing so provides the compiler
+with more specific information about the types and scopes of variables.
+
+In order to test the functionality of our SymbolTable visitor, we have added some new tests to our test suite. 
+They ensure that the scoping rules defined by the IC Spec are being correctly enforced and that useful errors are
+being reported when the compiler encounters them.  Specific areas of interest are: shadowing parameters, inheritance,
+the "this" keyword, legal vs. illegal name overlaps, and the resolution of ambiguous variable accesses.
+
+At the end of statements, our PrettyPrinter now adds a comment providing the line number and type of the 
+resolved variable. To accomplish this, we added resolveString() methods to Exprs that update name resolution
+ information, and then concatenate these descriptions, formatted as IC comments, to the end of statements.
+
+We also support the -printSymTab flag, but at the moment we are having trouble printing variables 
+declared within methods. We'll fix it soon!  They are, however, being recognized during name resolution...
+so that's exciting!
+
+///////////////////////////// SCOPING VISITOR + TYPE CHECKER - OCTOBER 23 /////////////////////////////
+
+Until this week, symbol table construction and name resolution/scoping rule enforcement were being 
+performed by a single class, the SymbolTableVisitor.  We now split those responsibilities between
+two classes; the SymbolTableVisitor constructs the table, and the ScopingVisitor enforces scoping
+rules for accesses, method calls, and class id types.  These rules must be enforced after the symbol
+tables are constructed in order to allow for forward references.
+
+For each access, we search for the corresponding declaration in the current and then enclosing scopes. 
+If we don't find any declaration of the proper kind (ie method, field, var), we will throw an error.
+Also, if we find a declaration that makes the declaration we are considering illegal (such as a formal
+ parameter declaration that cannot be shadowed), we throw an error. 
+ 
+We now check for superclass declarations when the SymbolTableVisitor visits the program, rather than when it
+visits each ClassDecl contained within the program.  This is allowed because IC does not allow forward
+references for class declarations.  So, whenever a class is declared with a superclass, we know that that
+superclass must already appear in the global scope.  If it does not appear in global scope already,
+we throw an error.
+  
+Our scoping visitor resolves some ambiguous accesses, but we reserve some resolutions (receiver names
+for field access and method calls) for the type checker, since they cannot be resolved before then.
+
+Our TypeChecker visitor enforces the type system outlined in the IC specification by propagating the
+types of expressions up the AST and determining whether the program contains any type errors.  To
+make reasoning about types easier, we have implemented a few useful helper methods, such as 
+checkSubtyping() and checkOverriding(). 
+
+Check subtyping  determines whether one type is a subtype of another. If the types are not base types of IC, 
+we use the SymbolTable scope in the ClassIDNode of the subtype to search for a reachable class with the name of the supertype.  
+If one is not found, we throw a type error reflecting the fact that we were expecting a subtype of the one but found
+the other. In the check subtyping method, we also enforce the less flexible rules for array subtyping laid out in the IC Spec: 
+specifically, if A is a subtype of B, this does not imply that A[] is a subtype of B[]: the only subtype of A[] is itself. 
+
+Check overriding, called when a subclass method overrides one found in a superclass, makes sure that the overriding method 
+is a subtype of the overriden one. It first checks that the return type of the overriding method is a subtype 
+of the overriden one and then goes through the overriden parameters and makes sure they are less general (i.e. subtypes)
+of the overriding ones. 
+
+Additionally, we have designed a PossibleTypes class, which extends TypeNode and is basically a
+wrapper for a Vector of TypeNodes.  This class is useful for comparing many types to determine their
+common superclass so that the TypeChcker can reason about whether portions of the program with 
+branching logic contain type errors. Consider, for example, nested if/else statements with many 
+return statements; we use PossibleTypes to store all of the possible return types so that we can
+reason about whether all the possible return statements match the return type of the method 
+in question. 
+
+Our TypeChecker does not check the argument types for Library calls, but does propagate information
+about their return types.  If the user calls a Library function with illegal arguments, then the 
+system will crash.  We have opted to allow that (admittedly undesirable behavior) and assume that 
+the user will use Library functions correctly. 
+ 
+We now also support printing with the dot utility.  When the user runs the program with the -printAST 
+flag, the program generates a pdf containing a graphical representation of the AST, as well as 
+printing the program text with name resolution annotations (as IC comments) to the terminal.     
+
+As always, we have added new tests to our test suite in order to debug the new features.  We have
+also started to organize our tests, and are in the process of giving them more meaningful names to
+make testing easier and more efficient. 
+
+///////////////////////////// SCOPING VISITOR + TYPE CHECKER - NOVEMBER 8 /////////////////////////////
+
+The TAC Class Hierarchy
+
+This week, we implemented the TAC class hierarchy and the TAC generator.  Our TAC class hierarchy includes
+classes for every TAC instruction: unary/binary expressions, method calls, jumps, copies, 
+loads and stores for different kinds of operands, labels, allocation, etc.
+
+In addition, we have implemented a few TACInstr classes that usefully abstract some frequently
+performed actions in TAC (ie checking array bounds and checking whether an array or object is 
+null when it is supposed to be dereferenced).
+
+We have also implemented a TAC_Comment class, which makes it possible to print the TAC with useful
+comments to make it more readable.
+
+We also have a set of operands, which include the obvious constant, program variable, and temporary variable
+as well as the natural array_access and field_access, which allow us to deal more easily with the fact
+that on any given access we may be interested in performing a store or a load. 
+
+The TAC_Generator 
+
+The TAC generator is a propagating visitor.  It passes register names (as Strings) down the 
+AST as it visits each node, and passes up lists of TAC Instructions.  Ultimately, it 
+generates a list of TAC instructions for every method in the program.
+
+We created a few helper methods to make register allocation and label naming easier.  These
+methods, getNextRegister() and getNextLabelIndex(), are essentially just counters that increment
+every time a register is allocated or a label is created.  Because we always use these methods
+when we need a register or a label, we ensure that we never accidentally overwrite a register 
+whose value we still need, and that we never accidentally reuse a label name.  Once our 
+compiler is up and working, we may try to minimize the number of registers we use, but for 
+now, we decided to be conservative in order to get a version working.  
+
+We also have a handleOperand() and handleLocation() helper methods, which deal with the possibility that an 
+operand of an expression or a conditional is a program variable, array access, or constant for the cases of operands
+to be used in expressions and locations to be written to. Since parameters and inits must always be loaded into 
+registers, we have also added loadOperand() which piggy-backs on handleOperand() but also loads constants and program
+variables into registers. We added an Array_Access operand to deal with the fact that some array accesses will lead
+to store and others to loads, which we will not want to immediately execute but rather defer to be handled
+in the assignment or expression by the handle helpers. A parallel situation arose for field accesses so we created 
+the operand Field_Access, which we again specially handle in our helpers. 
+
+We always write binary expressions and unary expressions into temporary registers, which we will likely want to improve. 
+
+We use the TAC_Printer to iterate through the TACLists we have added to the method declarations printing out
+the TAC instructions. 
+
+The Offset Calculator
+
+This class calculates offsets for fields and methods by checking for inherited
+fields and methods first, in order to determine a) the lowest offset for new 
+fields and methods and b) the offsets for overridden methods. It uses the setOffset()
+method in the DeclNode class to set the integer offset field associated with every 
+Declaration Node in the AST.
+
+Testing
+
+We utilized the 434-tests folder as well as a number of files we have added to the TACtests to check the offsets and
+some of our more complicated constructs like short-circuit AND/OR, if, and whiles. 
+
+//////////////////////////////////////// CODE GENERATION - NOVEMBER 18 //////////////////////////////////////////
+
+Since code generation is basically just translation from TAC to x86 instructions, our CodeGenerator class implements
+the TACVisitor interface.  It translates the TAC lists inserted into every method declaration that our TAC_Generator
+created when it traversed the AST.
+
+In addition to the x86 instructions for each method, our CodeGenerator also prints out the VTable for all the classes.  
+Using dispatch vector offsets calculated previously by the OffsetCalculator, insert method names into the appropriate
+slot of the vtable array. The method name begins with the name of the class in which the method is defined.  
+ 
+When a method is inherited but not overridden, it appears after the name of the super class that
+declared it.  Otherwise, when a subclass overrides an inherited method, the method name is preceded
+by the name of the current class.
+
+Also, the CodeGenerator allocates heap space for all the string constants in the program.
+
+The trickiest part of implementing the CodeGenerator was correctly calculating (and then not accidentally changing)
+the offset of local program variables and TAC generated temporary variables. We initially tried to consolidate the work of 
+calculating offsets within these classes. However, we then often had the issue of multiplying indices by 8 too many times
+and ending up with variables that should have matched containing different offsets. To improve this, we moved the 
+algebra out of the classes and into the CodeGenerator. While making the code a little less elegant, it
+seems like the right move to put all the logic in one class.
+
+We also had some difficulties with getting all the parts working for function calls. A lot of this originated from the offset
+problems (parameters are supposed to have positive offsets and our offset problems caused them to be negative). We also initially
+forgot to push on this, the implicit last parameter of every function call, and pushed parameters in forward instead of 
+backward order.  
+
+//////////////////////////////////////// DATA FLOW - NOVEMBER 21 //////////////////////////////////////////
+
+To implement reaching copies and live variable analysis, we extended the data flow analysis class, defining the 
+basics of the analysis and using our trusty visitor design pattern to implement the transfer functions for the 
+various instructions. 
+
+We compute and print out the data flow information when the corresponding optimization flag is on as well as the -printDFA
+option.   
+
+REACHING COPIES (-cpp)
+
+Reaching copies determines the aliases that are valid along all paths leading to a particular program point. 
+We keep track of this information in a Vector of copies, each of which contains two Variables (which can either 
+be Program Variables or Temporary Variables). When we merge two different branches of the control flow graph, 
+we take the intersection of the copy vectors since we are only interested in copies valid along all possible paths. 
+
+In our transfer functions, we both generate copies and remove them when they cease to be valid. When we run across a
+copy instruction we add it to the Vector. Whenever we redefine a variable or some part of it (e.g. a field in an object 
+or a member of an array), we kill copies involving that variable by removing them from the Vector.  
+
+LIVE VARIABLE (-dce)
+
+Live variable analysis determines the variables which are alive in the sense that they are used sometime later 
+in the program before they are redefined. To represent this information we keep a Vector of Variables which can 
+be either program variables or temporary variables. As a result, the analysis flows backward with the ins of the successors 
+determining the outs of the predecessors. Since we never want to eliminate a variable that's value will be used along
+some path of the control flow graph, our meet operator is union and our top element is the empty set. The boundary, which
+represents the in[exit] is also the empty set because no variables are alive at the end of the program. 
+
+In our transfer functions, we visit program variables and temporary variables with booleans DEF and USE. On DEFs, we remove
+the variable from the Vector of live variables and on USEs, we add the variable.  
+
+For live variable and reaching copies, we had some trouble with aliasing of the in and out sets with each other and with 
+those of other blocks. To fix this, we made new copies of the ins and outs at the beginning of transfer functions 
+so we did not unintentionally alter the information for other basic blocks.  
+
+CONSTANT FOLDING (-cfo) 
+
+Constant folding maps TAC Variables to constants so we can later replace variables with their constant equivalents. 
+Since we are only interested in definitions from variables to constants that are valid along all paths through the 
+program, our meet operator is intersection. 
+
+To represent the map from variables to constants, we use a hashtable. Since we want to hash on the name of the variable, 
+we override the hashcode of the variable to return the hash computed on underlying string name. We had to perform a 
+similar overriding for equals.  
+
+I was having trouble using contains but get and then comparing to null seems to work as expected. 
+
+We currently do not do anything with String constant, only integers and booleans. 
+
+//////////////////////////////////////// OPTIMIZATION - NOVEMBER 25 //////////////////////////////////////////
+
+DEAD CODE ELIMINATION (-dce)
+
+For dead code elimination, we eliminate stores into variables which are not in the live variable set out of the basic 
+block, meaning these variables will not be used later in the program and the store is dead code. We update the TACList 
+of the method by replacing dead stores with NoOps. To ease this process, we added a method to TACList, which finds the old
+instructions, removes it, and then replaces it with the new instruction (in this case a NoOp). 
+
+Dead code elimination implements TACVisitor, with instructions falling into two general categories: those that update variables
+and those that don't. Instructions that don't change variables will not be changed by this optimization. Instructions that do
+will be tested to see if their destination is live at the exit of the corresponding basic block. If so, no change is made. 
+If not, the instruction is replaced with a NoOp. 
+
+//////////////////////////////////////// OPTIMIZATION - DECEMBER 5 //////////////////////////////////////////
+
+COMMON SUB-EXPRESSION ELIMINATION (-cse)
+Using the information computed by our Available Expressions Analysis, we replace expressions that
+are known to be computed earlier in the program with the variables where their values are stored. In
+a first pass, we iterate backwards through the list of TACInstrs in order to identify expressions
+whose values are held by multiple variables.  When we encounter such expressions, we replace the 
+first definition of that expression with as assignment of the expression to a new temporary 
+variable.  Then we update the set of generating instructions for that expression to only include
+this new assignment. During the second pass, we will have one unique variable associated with each 
+available expression.  Whenever we see an available expression available along multiple paths, we 
+make sure that all branches assign the expression to the same variable. Since the work of the first 
+pass affects that done in the second, we consolidate it into its own pass, which we do first.
+
+To capture the idea of an available expression, we created an AvailableExpr interface, which 
+specifies that any class implementing it must contain the following methods: equals, hashCode,
+involves, accesesField, getDest, and setDest.
+    
+We have also added a Check abstract class which implements AvailableExpr and defines many of
+these methods and helps us treat Check instructions specially in our analysis/optimizations.    
+
+CONSTANT FOLDING (-cfo)
+Using the information computed by our Reaching Constants analysis, we replace variables that 
+are known to be constant at a particular program point with their known value.  We have
+also tweaked our Reaching Constants analysis to perform arithmetic or boolean operations on
+expressions whose operands are known to be constant.  
+
+COPY PROPAGATION (-cpp)
+Using the information computed by our Reaching Copies analysis, we replace each variable defined 
+by a prior copy with its alias (reaching copies ensures that we will only make the replacement is
+that alias is unique).  If an alias can be propagated to every place it is referenced, then 
+dead code elimination can eliminate the copy instruction that produces the alias.  We added an
+isCopy() method to our Load and Store TACInstrs which returns true if both sides are TACVariables,
+and otherwise returns false.  We also created a Copy class to store the two TACVariables that are
+aliased to one another.
+ 
+When we run these optimizations followed the the -dce flag, we remove the code that is made dead by 
+our chosen optimizations.
+
+We have also implemented the -opt flag, which runs all of the optimizations and eliminates 
+dead code.
+
+Since our optimizations may alter the instruction lists comprising the methods in a program, each 
+of the optimizations calls CFG_Builder's generateCFG method to rebuild the Control Flow Graph 
+for a method so that it matches the optimized instruction list.
+
+OPTIMIZATION ANALYSIS:
+
+	Matrix Multiply:
+	
+		SPACE ANALYSIS
+	
+		Compiled unoptimized				: 355 instructions
+		Compiled with single -opt flag		: 345 instructions
+		Compiled with double -opt -opt flag	: 328 instructions
+		Compiled with triple -opt flag		: 305 instructions
+		Compiled with quadruple -opt flag	: 300 instructions
+			No improvement with > 4 -opt flags.
+  		
+  		TIME ANALYSIS
+  		
+  		See 434 Experimental Data.ods for all trials and averages, but in summary, averaged over 5 trials:
+  		
+  		Run on 400 x 400 x 400 matrices: 
+  		Compiled with no -opt flags: ran in 1.8144 s
+  		Compiled with 1 -opt flags:  ran in 1.7248 s
+  		Compiled with 2 -opt flags:	 ran in 1.5568 s
+  		Compiled with 3 -opt flags:  ran in 1.18   s
+  		Compiled with 4 -opt flags:  ran in 1.1488 s
+  		
+	QuickSort:
+  		
+  		SPACE ANALYSIS
+	
+		Compiled unoptimized				: 236 instructions
+		Compiled with single -opt flag		: 230 instructions
+		Compiled with double -opt -opt flag	: 222 instructions
+		Compiled with triple -opt flag		: 200 instructions
+			No improvement with > 3 -opt flags.
+  		
+  		TIME ANALYSIS
+  		
+  		See 434 Experimental Data.ods for all trials and averages, but in summary, averaged over 5 trials:
+  		
+  		Run on a list of 10000000 elements: 
+  		Compiled with no -opt flags: ran in 6.2832 s
+  		Compiled with 1 -opt flags : ran in 8.6346 s
+  		Compiled with 2 -opt flags : ran in 7.4848 s
+  		Compiled with 3 -opt flags : ran in 6.4996 s
+   
+		This is odd - we are not sure why our optimized compiled code, which has 30 fewer instructions 
+		than the unoptimized code, runs slightly slower.  However, from 1 to 3 -opt flags we see a similar trend
+		to when we experimented on Matrix Multiple - that is, more -opt flags cause the program to shrink and run 
+		faster. 
+		
+	Sieve:
+	
+		SPACE ANALYSIS 
+		
+		Compiled unoptimized				: 146 instructions
+		Compiled with single -opt flag		: 137 instructions
+		Compiled with double -opt -opt flag	: 133 instructions
+		Compiled with triple -opt flag		: 132 instructions
+		Compiled with four -opt flags		: 130 instructions
+			No improvement with > 4 -opt flags.
+			
+		Run to find the primes in the first 10000000 elements: 
+		Compiled with no -opt flags: ran in 1.8512 s
+  		Compiled with 1 -opt flags:  ran in 1.8056 s
+  		Compiled with 2 -opt flags:	 ran in 1.808 s
+  		Compiled with 3 -opt flags:  ran in 1.7912   s
+  		Compiled with 4 -opt flags:  ran in 1.8 s
+		
+   

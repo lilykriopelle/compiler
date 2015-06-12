@@ -1,0 +1,5 @@
+package ic.ast;
+
+public enum UnOp {
+	NOT, UMINUS, LENGTH;
+}

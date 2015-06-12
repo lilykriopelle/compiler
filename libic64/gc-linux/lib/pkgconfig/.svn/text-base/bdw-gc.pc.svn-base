@@ -1,0 +1,10 @@
+prefix=/home/cs-students/15eh3/workspace434/ICC-Marans/libic64/gc-7.2alpha6/../gc-linux
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: Boehm-Demers-Weiser Conservative Garbage Collector
+Description: A garbage collector for C and C++
+Version: 7.2alpha6
+Libs: -L${libdir} -lgc
+Cflags: -I${includedir}

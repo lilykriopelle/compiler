@@ -1,0 +1,19 @@
+
+class Array {
+
+	int a; 
+	//int b; 
+	int[] c; 
+
+	void main(string[] args) {
+		int i = 0; 
+		c = new int[10];
+		while (i < 10) {
+			c[i] = i; 
+			i = i + 1; 
+		}
+		//b = -5; 
+		a = 10; // + b;
+		Library.printi(c[a]);
+	}
+} 

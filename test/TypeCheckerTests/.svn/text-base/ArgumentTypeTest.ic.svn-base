@@ -1,0 +1,23 @@
+class A {
+	void f(int x, string s, boolean b) {
+		int y;
+	} 
+}
+
+class B {
+
+	A a;
+	int x;
+	string s;
+	boolean b;
+
+	void main(string[] args) {
+		a = new A();
+		x = 3;
+		s = "yo";
+		b = true;
+		
+		a.f(x, s, b);
+	
+	}
+}

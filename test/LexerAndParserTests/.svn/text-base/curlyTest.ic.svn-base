@@ -1,0 +1,7 @@
+// Successfully runs. Breaks if we remove the closing curly brace.
+class B {
+}
+class A extends B {
+
+}
+

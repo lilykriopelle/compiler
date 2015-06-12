@@ -1,0 +1,48 @@
+  class ArrayManipulation {
+  	int[] a; 
+  	void main(string[] args) {
+  		int pivot; 
+  		a = new int[10];
+  		initArray(); 
+  		pivot = partition(0, 9);
+  		partition(pivot, 9);   
+  	}
+  	
+  	void initArray() {
+		int i = 0;
+		while(i < a.length) {
+		    a[i] =  Library.random(a.length*2);
+		    i = i+1;
+		}
+    }
+  			 	
+ 	int partition(int low, int high) {
+		int pivot = a[low];
+		int i = low; 
+		int j = high;
+		int tmp;
+	
+		while (true) { 
+	    	while (a[i] < pivot) {
+	    		i = i+1;
+	    		Library.printi(a[i]);
+	    		Library.println("");  
+	    	}
+	    	while (a[j] > pivot) {
+	    		j = j-1;    		
+	    		Library.printi(a[i]); 
+	    		Library.println(""); 
+	    	}
+	    	
+	    	if (i >= j) break;
+	    
+		    tmp = a[i];
+		    a[i] = a[j]; 
+		    a[j] = tmp;
+		    i = i+1;
+		    j = j-1;
+		} 
+	
+		return j;
+	}
+}

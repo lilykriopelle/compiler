@@ -1,0 +1,6 @@
+ /* null */
+      class Test  { 
+        int y;
+         void main(string[] a ) { Test x=null; Library.printi(x.y); }
+     }
+    

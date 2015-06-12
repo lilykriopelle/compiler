@@ -1,0 +1,14 @@
+
+package ic.tac; 
+
+public interface AvailableExpr {
+
+    public boolean involves(TACVar var); 
+    
+    // This will only be true for field accesses which involve the
+    // specified field.
+    public boolean accessesField(String field);
+    
+    public TACVar getDest(); 
+
+}

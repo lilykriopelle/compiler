@@ -1,0 +1,33 @@
+// incorrect overriding
+class C {
+	int g;
+	void g() {
+	}
+}
+
+class B extends C {
+	string bee;
+	void g(int c) { //THROWS A SCOPING ERROR HERE AS IT SHOULD
+	}
+	
+	void println(string x) {
+		string bee = "hello";
+		Library.println(x);
+	}
+}
+class A extends B {
+	int a, b, c; 
+	int[] array; 
+	int bAndC() {
+		return b + c; 
+	}
+	void main (string [] args) {
+		B buzz = new A();
+		string s = "hello";
+		boolean t = true;
+		int wut = bAndC();
+		buzz.g(5);
+		//buzz.g();
+		buzz.println(s); 
+	}
+}

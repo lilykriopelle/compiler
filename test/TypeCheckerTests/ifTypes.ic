@@ -1,0 +1,11 @@
+class A {
+	void main(string[] args) {}
+	int f() {
+		if(true) {
+			return 3; 
+		} else {
+			return 5;
+		} 
+	} 
+	int x;
+}

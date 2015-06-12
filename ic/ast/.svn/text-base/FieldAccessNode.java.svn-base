@@ -1,0 +1,54 @@
+package ic.ast;
+
+
+public class FieldAccessNode extends LocationNode {
+	ExprNode receiver; 
+	String field;
+	FieldDecl resolve = null;
+	public FieldAccessNode(int line,
+			ExprNode receiver, String field) {
+		super(line, field); 
+		this.receiver = receiver;
+		this.field = field;
+	}
+	
+	public void resolve(FieldDecl resolve) {
+		this.resolve = resolve;
+		type = resolve.getType();
+	}
+	
+	public FieldDecl getResolved() {
+		return resolve; 
+	}
+	
+	public ExprNode getReceiver() {
+		return receiver;
+	}
+	
+	public String getField() {
+		return field;
+	}
+	
+	@Override
+	public String toString() {
+		return receiver + "." + field;
+	} 
+	
+	public void accept(Visitor v) {
+		v.visit(this);
+	}
+	
+	public <UpType,DownType> UpType accept(PropagatingVisitor<UpType,DownType> v, DownType t) throws Exception {
+		return v.visit(this, t);
+	}
+	
+	public <DownType> void accept(PropagateDownVisitor<DownType> v, DownType t) throws Exception {
+		v.visit(this, t); 
+	}
+	
+	public <UpType> UpType accept(PropagateUpVisitor<UpType> v) throws Exception {
+		return v.visit(this); 
+	}
+	
+	
+}

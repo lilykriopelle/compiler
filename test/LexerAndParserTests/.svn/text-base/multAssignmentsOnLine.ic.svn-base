@@ -1,0 +1,19 @@
+// Runs. Testing multiple declarations/assignments in a single line (lines 12 + 13).
+class B {
+}
+class A extends B {
+	int a, b, c; 
+	int[] array; 
+	
+	void main (string [] args) {
+		A a = new A(); 
+		c = a.method(5, 7, "me");
+		if(b==c) Library.println("Hello");  
+	}
+	
+	int method(int a, int b, string s) {
+		int d = 5, e = 7;
+		string h = "hello", y = "world";
+		return 5; 
+	}
+}

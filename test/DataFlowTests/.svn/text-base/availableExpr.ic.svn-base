@@ -1,0 +1,10 @@
+class CSE {
+	void main(string[] args) {
+		int x = 5 + 3; 
+		int y = 6; 
+		int z = x + y;
+		int w = x + y;
+		Library.printi(w); 
+	}
+}
+	

@@ -1,0 +1,142 @@
+package ic.ast;
+
+
+import ic.cfg.ControlFlowGraph;
+import ic.tac.Operand;
+import ic.tac.TACInstr;
+import ic.tac.TACList;
+import ic.tac.TACVar;
+
+import java.util.LinkedList;
+import java.util.Stack;
+import java.util.Vector;
+
+public class MethodDecl extends Decl {
+	
+	TypeNode returnType; 
+	Vector<VarDecl> parameters;
+	BlockNode block;
+	
+	MethodDecl overridenMethod;
+	TACList instrs; 
+	ClassDecl enclosingClass; 
+	ControlFlowGraph cfg; 
+	
+	//This is used for linear searching for methods in the vtable
+	int num = -1; 
+	
+	public MethodDecl(int line,
+			TypeNode returnType, String methodName,
+			Vector<VarDecl> parameters, BlockNode block) {
+		super(line, methodName);
+		this.returnType = returnType;
+		this.parameters = parameters;
+		this.block = block;
+	}
+	
+	public Stack<TACVar> getStackFrame() {
+		return instrs.getStackFrame();
+	}
+	
+	public void setCFG(ControlFlowGraph cfg) {
+		this.cfg = cfg;
+	}
+	
+	public ControlFlowGraph getCFG() {
+		return cfg; 
+	}
+	
+	public void setEnclosingClass(ClassDecl enclosingClass) {
+		this.enclosingClass = enclosingClass; 
+	}
+	
+	public ClassDecl getEnclosingClass() {
+		return enclosingClass; 
+	}
+	
+	public int getFrameSize() {
+		if (instrs.getStackFrame() == null) { 
+			return 8; 
+		} else {
+			return 8*instrs.getStackFrame().size();
+		}
+	}
+	
+	public void setInstrs(TACList instrs) {
+		this.instrs = instrs;
+	}
+	
+	public TACList getTAC() {
+		return instrs; 
+	}
+
+	public void setOverriden(MethodDecl method) {
+		overridenMethod = method;
+	}
+	
+	public MethodDecl getOverriden() {
+		return overridenMethod;
+	}
+	
+	public TypeNode getReturnType() {
+		return returnType;
+	}
+	
+	public Vector<VarDecl> getParams() {
+		return parameters;
+	}
+	
+	public BlockNode getMethodBody() {
+		return block;
+	}
+	
+	public String getResolveName() {
+		String className = getScope().getEnclosingScope().getName(); 
+		return className.substring(className.length() - 1, className.length()) + "_" + name;
+	}
+	
+	 
+	public String toString() {
+		return getName();
+	}
+	
+	 
+	public void accept(Visitor v) throws Exception {
+		v.visit(this);
+	}
+	
+	 
+	public <UpType,DownType> UpType accept(PropagatingVisitor<UpType,DownType> v, DownType t) throws Exception {
+		return v.visit(this, t);
+	}
+	
+	 
+	public <DownType> void accept(PropagateDownVisitor<DownType> v, DownType t) throws Exception {
+		v.visit(this, t); 
+	}
+	
+	 
+	public <UpType> UpType accept(PropagateUpVisitor<UpType> v) throws Exception {
+		return v.visit(this); 
+	}
+
+	public void setFrame(Stack<TACVar> stackFrame) {
+		instrs.setStackFrame(stackFrame); 
+	}
+
+	public void printStackFrame() {
+		System.out.println("The stack frame of " + name); 
+		for(TACVar cur: instrs.getStackFrame()) {
+			System.out.println(cur); 
+		}
+	}
+
+	public void setNum(int num) {
+		this.num = num; 
+	}
+	
+	public int getNum() {
+		return num;
+	}
+	
+}

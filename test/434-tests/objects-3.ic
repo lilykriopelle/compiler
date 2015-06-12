@@ -1,0 +1,20 @@
+ /* overrides */
+      class Super { 
+      	int f() { 
+      		return 1; 
+      	} 
+      	int g() { 
+      		return f(); 
+      	} 
+      }
+      class Test extends Super { 
+        int g() { return 6; }
+         void main(string[] a ) { 
+         	Super x=new Super(); 
+         	Super y; 
+         	Library.printi(x.f()); 
+         	y=new Test(); 
+         	Library.printi(y.f()); 
+         }
+     }
+    

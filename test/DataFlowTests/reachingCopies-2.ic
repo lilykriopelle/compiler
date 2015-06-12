@@ -1,0 +1,12 @@
+class A {
+	void main(string[] args) {
+		int z; 
+		int x; 
+		if(true) {
+			int y = x; 
+		} else {
+			int y = x;
+		}
+		z = x; 
+	}
+}

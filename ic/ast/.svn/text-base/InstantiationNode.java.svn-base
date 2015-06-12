@@ -1,0 +1,45 @@
+package ic.ast;
+
+import ic.error.ScopingError;
+import ic.error.TACError;
+import ic.error.TypeError;
+
+public class InstantiationNode extends ExprNode {
+	ClassIDNode instantiatedClass; 
+	public InstantiationNode(int line, ClassIDNode instantiatedClass) {
+		super(line);
+		this.instantiatedClass = instantiatedClass; 
+		super.setType(instantiatedClass);
+	} 
+	
+	public ClassIDNode getInstantiatedClass() {
+		return instantiatedClass; 
+	}
+
+	
+	public String toString() {
+		return "new " + instantiatedClass.toString() + "()"; 
+	}
+	
+	 
+	public void accept(Visitor v) {
+		v.visit(this);
+	}
+	
+	 
+	public <UpType,DownType> UpType accept(PropagatingVisitor<UpType,DownType> v, DownType t) throws Exception {
+		return v.visit(this, t);
+	}
+	
+	 
+	public <DownType> void accept(PropagateDownVisitor<DownType> v, DownType t) throws Exception{
+		v.visit(this, t); 
+	}
+	
+	 
+	public <UpType> UpType accept(PropagateUpVisitor<UpType> v) throws Exception {
+		return v.visit(this); 
+	}
+	
+	
+}

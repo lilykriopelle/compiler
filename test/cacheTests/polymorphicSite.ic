@@ -1,0 +1,88 @@
+
+class SuperDuperCacheTest {
+	void a() {}
+	void b() {}
+	void c() {} 
+	void d() {}
+	void e() {}
+	void f() {}
+	void g() {} 
+	void h() {}
+	void i() {}
+	void j() {}
+	void k() {}
+	void l() {}
+}
+
+class SuperCacheTest extends SuperDuperCacheTest {
+	void a() {}
+	void b() {}
+	void c() {} 
+	void d() {}
+	void e() {}
+	void f() {}
+	void g() {} 
+	void h() {}
+	void i() {}
+	void j() {}
+	void k() {}        	
+}
+
+class ColorCacheTest extends SuperCacheTest {
+	void a() {}
+	void b() {}
+}
+
+class OtherCacheTest extends SuperCacheTest {
+	void m() {}
+}
+
+class CacheTest6 extends SuperCacheTest {
+	void l() {}
+}
+
+class CacheTest7 extends SuperCacheTest {
+	void l() {}
+}
+
+class CacheTest8 extends SuperCacheTest {
+	void l() {}
+}
+
+class CacheTest extends SuperCacheTest {
+
+	void f() {}
+	void g() {} 
+	void h() {} 
+	void j() {} 
+	void k() {} 
+
+	void main(string[] args) {
+		SuperDuperCacheTest c; 
+		int i = 1;
+		while (i < 1000000) {
+			if(i % 8 == 0) {
+				c = new CacheTest8(); 
+			} else if(i % 7 == 0) {
+				c = new CacheTest7(); 
+			} else if(i % 6 == 0) {
+				c = new CacheTest6(); 
+			} else if(i % 5 == 0) {
+				c = new SuperDuperCacheTest();
+			} else if (i % 4 == 0) {
+				c = new SuperCacheTest(); 
+			} else if(i % 3 == 0) {
+				c = new CacheTest();
+			} else if(i % 2 == 0) {
+				c = new ColorCacheTest();
+			} else {
+				c = new CacheTest();
+			} 
+			c.f(); 
+			c.g(); 
+			c.h(); 
+			i = i + 1;
+			
+		}
+	} 
+}

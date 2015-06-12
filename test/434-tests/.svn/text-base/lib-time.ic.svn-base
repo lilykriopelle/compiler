@@ -1,0 +1,7 @@
+class Main {  void main(string[] args) {  
+int x;
+Library.println("Hello");
+Library.println("HELLO");
+x = Library.time(); 
+Library.printi(x); 
+}}

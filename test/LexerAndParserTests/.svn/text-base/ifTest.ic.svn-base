@@ -1,0 +1,10 @@
+
+class A {
+	void main() {
+		if(c==b) {
+			print("hello");
+		} else {
+			print("goodbye");
+		}
+	}
+}

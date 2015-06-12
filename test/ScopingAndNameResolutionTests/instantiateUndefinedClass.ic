@@ -1,0 +1,15 @@
+//Throws an error as it should 
+class C {
+	int c;
+	void b() { c = 5; }
+}
+class B {
+	int c; 
+	void b() { c = 3; }
+}
+
+class A extends B {
+	void a() {
+		return new D(); 
+	}
+} 

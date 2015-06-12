@@ -1,0 +1,87 @@
+package ic.ast;
+
+import java.util.Vector;
+import java.util.Hashtable;
+
+public class ClassDecl extends Decl {
+	
+	String superClass; 
+	Vector<Decl> fieldsAndMethods;
+	int numMethods = 0;
+	int size; 
+	int numNewMethods = 0; 
+	long[] vtable;
+	
+	public ClassDecl(int line,
+			String className, String superClass,
+			Vector<Decl> fieldsAndMethods) {
+		
+		super(line, className);
+		this.superClass = superClass;
+		this.fieldsAndMethods = fieldsAndMethods;
+		
+		/** ClassDecls don't have meaningful offsets */
+		super.offset = -1;
+	}	
+	
+	public void setVTable(long[] vtable) {
+		this.vtable = vtable;
+	}
+	
+	public void setSize(int size) {
+		this.size = size; 
+	}
+	
+	public int getSize() {
+		return size; 
+	}
+	
+	public Vector<Decl> getDeclarations() {
+		return fieldsAndMethods;
+	}
+	
+	public int getNumMethods() {
+		return numMethods;
+	}
+	
+	public int getNumNewMethods() {
+		return numNewMethods; 
+	}
+	
+	public void setNumMethods(int numMethods) {
+		this.numMethods = numMethods; 
+	}
+	
+	public void setNumNewMethdos(int numNewMethods) {
+		this.numNewMethods = numNewMethods; 
+	}
+	
+	
+	public String getSuperClass() {
+		return superClass; 
+	}
+	
+	
+	@Override
+	public String toString() {
+		return "class " + super.getName();  
+	} 
+	
+	public void accept(Visitor v) throws Exception {
+		v.visit(this);
+	}
+	
+	public <UpType,DownType> UpType accept(PropagatingVisitor<UpType,DownType> v, DownType t) throws Exception {
+		return v.visit(this, t);
+	}
+	
+	public <DownType> void accept(PropagateDownVisitor<DownType> v, DownType t) throws Exception {
+		v.visit(this, t); 
+	}
+	
+	public <UpType> UpType accept(PropagateUpVisitor<UpType> v) throws Exception {
+		return v.visit(this); 
+	}
+	
+	
+}

@@ -1,0 +1,40 @@
+
+class SuperCacheTest {
+	void a() {}
+	void b() {}
+	void c() {} 
+	void d() {}
+	void e() {}
+	void f() {}
+	void g() {} 
+	void h() {}
+	void i() {}
+	void j() {}
+	void k() {}        	
+}
+
+class CacheTest extends SuperCacheTest {
+
+	void f() {}
+	void g() {} 
+	void h() {} 
+	void j() {} 
+	void k() {} 
+
+	void main(string[] args) {
+		SuperCacheTest c;  
+		int i = 0;
+		while (i < 10000000) {
+			if(i % 2 == 0) c = new SuperCacheTest(); 
+			else c = new CacheTest(); 
+			c.f(); 
+			c.g(); 
+			c.h(); 
+			c.j(); 
+			c.k(); 
+			i = i + 1;
+		}
+	} 
+}
+	
+	

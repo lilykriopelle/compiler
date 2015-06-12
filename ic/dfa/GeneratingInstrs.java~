@@ -1,0 +1,90 @@
+
+package ic.dfa; 
+
+import ic.tac.TACInstr;
+import ic.tac.TACVar; 
+import java.util.Vector; 
+import ic.tac.AvailableExpr; 
+
+/** 
+ * This class basically serves as a wrapper of the set of
+ * instructions, which produce a particular available expression. 
+ */
+
+public class GeneratingInstrs {
+    private Vector<AvailableExpr> generatingInstrs; 
+    public GeneratingInstrs() {
+	generatingInstrs = new Vector<AvailableExpr>(); 
+    }
+    
+    public GeneratingInstrs(AvailableExpr instr) {
+	generatingInstrs = new Vector<AvailableExpr>();
+	generatingInstrs.add(instr); 
+    }
+
+    // Adds the instruction to the Vector. 
+    public void add(AvailableExpr instr) {
+	generatingInstrs.add(instr); 
+    }
+
+    // Adds together all instructions that compute a particular
+    // expression, used by the meet of Available Expressions.
+    public void addInstrs(GeneratingInstrs others) {
+	generatingInstrs.addAll(others.getInstrs()); 
+	
+	// for (AvailableExpr cur: others.getInstrs()) {
+	//     add(cur); 
+	// }
+    }
+
+    public Vector<AvailableExpr> getInstrs() {
+	return generatingInstrs; 
+    }
+
+    // Returns true if another expression in this set computes the
+    // same expr and puts it in the same destination.
+    public boolean contains(AvailableExpr instr) {
+	TACVar dest = instr.getDest();
+	for(AvailableExpr cur: generatingInstrs) {
+	    if (cur.equals(instr) && cur.getDest().equals(dest)) {
+		return true; 
+	    }
+	}
+	return false; 
+    }
+
+    @Override
+    public boolean equals(Object o) {
+	if(o instanceof GeneratingInstrs) {
+	    GeneratingInstrs other = (GeneratingInstrs)o; 
+	    if(other.getInstrs().size() != generatingInstrs.size()) return false;
+	    for(AvailableExpr cur: generatingInstrs) {
+		if( ! other.contains(cur)) {
+		    return false; 
+		}
+	    }
+	    return true; 
+	} else {
+	    return false; 
+	}
+    }
+
+    public String elementString(AvailableExpr expr) {
+	if(expr.getDest() == null) {
+	    return expr.toString(); 
+	} else {
+	    return expr.getDest().toString() + " = " + expr.toString(); 
+	}
+    }
+
+    @Override
+    public String toString() {
+	String toString = " " + elementString(generatingInstrs.get(0));
+	for(int i = 1; i < generatingInstrs.size(); i++) {
+	    toString += ", " + elementString(generatingInstrs.get(i)); 
+	}
+	return toString; 
+    }
+				
+
+}

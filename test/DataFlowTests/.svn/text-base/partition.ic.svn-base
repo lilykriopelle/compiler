@@ -1,0 +1,87 @@
+ class Partition {
+ 	int[] a;  
+ 	void main(string[] args) {
+ 		a = new int[15];
+ 		//initArray(); 
+ 		//printArray(); 
+ 		quicksort(0, 14);
+ 		//Library.printi(partition(0, 10)); 
+ 	}
+ 	
+ 	void quicksort(int low, int high) {
+		if (low < high) {
+		    int mid = 15; //partition(low, high);
+			quicksort(low, mid);
+			Library.printi(low); 
+		    quicksort(mid+1, high);
+		}
+    }
+ 	
+ 	/*
+ 	void printArray() {
+		int i = 0;
+	
+		Library.print("Array elements: ");
+		while(i<a.length) {
+		    Library.printi(a[i]);
+		    Library.print (" ");
+		    i = i+1;
+		}
+		Library.print("\n");
+    }
+ 	
+ 	void initArray() {
+		int i = 0;
+		while(i < a.length) {
+		    a[i] =  Library.random(a.length*2);
+		    i = i+1;
+		}
+    }
+ 	
+ 	int partition(int low, int high) {
+		int pivot = a[low];
+		int i = low; 
+		int j = high;
+		int tmp;
+		Library.print("PIVOT ");
+		Library.printi(low);
+		Library.print(": ");   	
+		Library.printi(a[low]);
+		Library.println("");
+ 		
+ 		Library.print("HIGH VALUE of ");
+		Library.printi(high);
+		Library.print(": ");   	
+		Library.printi(a[high]);
+		Library.println("");
+ 		
+		while (true) { 
+	    	while (a[i] < pivot) {
+	    		i = i+1;
+	    		Library.printi(i); 
+	    		Library.print(" "); 
+	    	}
+	    	Library.printi(a[j]); 
+	    	Library.println(""); 
+	    	while (a[j] > pivot) {
+	    		j = j-1;
+	    		Library.printi(a[j]);
+	    		Library.println("");
+	    		Library.printi(j); 
+	    		Library.print(" ");
+	    		
+	    	}
+	    	Library.println("");
+	    	if (i >= j) break;
+	    
+		    tmp = a[i];
+		    a[i] = a[j]; 
+		    a[j] = tmp;
+		    i = i+1;
+		    j = j-1;
+		} 
+	
+		return j;
+    }
+    */
+}

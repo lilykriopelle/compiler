@@ -1,0 +1,5 @@
+// Breaks
+
+class A extends {
+
+}

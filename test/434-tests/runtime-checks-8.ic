@@ -1,0 +1,1 @@
+class Main {  void main(string[] args) {int[] x=null;x[1]=1;  }}

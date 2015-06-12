@@ -1,0 +1,6 @@
+class A {
+	int f() {
+		x = 5; 
+	} 
+	int x;
+}

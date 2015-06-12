@@ -1,0 +1,8 @@
+
+class UnaryLive {
+      void main(string[] args) {
+      	   int i = -5; 
+	   int z = i + 10; 
+	   Library.printi(z);
+	   }
+}

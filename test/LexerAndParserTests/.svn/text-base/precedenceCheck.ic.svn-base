@@ -1,0 +1,7 @@
+class A {
+	string x, y, z, w; 
+	void main(string[] args) {}
+	boolean f() {
+		return y == x || z == w; 
+	}
+}

@@ -1,0 +1,20 @@
+class B {
+
+	int x;
+
+}
+
+class A extends B {
+	
+	void main(string[] args) {}
+	
+	int f() {
+		x = "moo";
+		if(true) {
+			return 3; 
+		} else {
+			return 5;
+		} 
+	} 
+
+}

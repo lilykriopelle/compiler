@@ -1,0 +1,6 @@
+class Uminus {
+	void main(string[] args) {
+		int x = -11;
+		int y = -11; 
+	}
+}

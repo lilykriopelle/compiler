@@ -1,0 +1,11 @@
+//runs
+class B {
+}
+class A extends B {
+	int a; 
+	int b; 
+	void main (string[] args) { 
+		a = 5;
+		b = 3; 
+	}
+}

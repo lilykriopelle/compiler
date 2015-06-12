@@ -1,0 +1,16 @@
+package ic.ast;
+
+public abstract class LocationNode extends ExprNode {
+	
+	String name;
+	
+	public LocationNode(int line, String n) {
+		super(line);
+		name = n;
+	} 
+	
+	public String getName() {
+		return name;
+	}
+	
+}

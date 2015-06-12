@@ -1,0 +1,12 @@
+
+      class Test { 
+         void main(string[] a ) {
+	   int i = 0;
+	   while (true) {
+	     i = i + 1;
+	     Library.printi(i);
+	     if (i == 5) break;
+	   }
+         }
+      }
+    

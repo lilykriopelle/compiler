@@ -1,0 +1,5 @@
+class Main {  void main(string[] args) {  
+int x = 0;   
+//Library.printi(1+1);  
+}
+}

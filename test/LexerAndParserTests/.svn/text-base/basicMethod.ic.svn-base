@@ -1,0 +1,19 @@
+//runs
+class A {
+	int a; 
+	int b; 
+	int[] array; 
+	void main (string[] args) {
+		 B a = new B(); 
+		 b = a.method();
+		 while(a==b) return "Hello";  
+	}
+}
+
+class B extends A {
+	int method() {
+		int a = b; 
+		int b = array.length; 
+		return 5; 
+	}
+}
