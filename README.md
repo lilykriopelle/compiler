@@ -1,6 +1,5 @@
 # Java-Lite Compiler
-This is a compiler for a simple object oriented language whose features mirror those of Java.  
-It was built by Lily Riopelle and Emma Harrington for CS434 at Williams College (for more information about the course, 
+This is a compiler for a simple object oriented language whose features mirror those of Java, built by Lily Riopelle and Emma Harrington for CS434 at Williams College (for more information about the course, 
 go [here](http://cs.williams.edu/~freund/cs434/)). It compiles to x86 assembly.
 
 ## Type System
